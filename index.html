@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>灵瞳助手 LingTong AI</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      background-color: #1e1e1e;
+      color: #f0f0f0;
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+    }
+
+    .sidebar {
+      width: 240px;
+      background-color: #111;
+      padding: 20px;
+      box-sizing: border-box;
+      border-right: 1px solid #333;
+      overflow-y: auto;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 16px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .tip {
+      font-size: 14px;
+      color: #cccccc;
+      margin-bottom: 10px;
+    }
+
+    #preview {
+      max-width: 100%;
+      border: 1px solid #444;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    .result-box {
+      flex: 1;
+      background-color: #2e2e2e;
+      padding: 10px;
+      border-radius: 8px;
+      overflow-y: auto;
+      font-family: Menlo, monospace;
+      white-space: pre-wrap;
+      border: 1px solid #555;
+      margin-bottom: 10px;
+    }
+
+    .chat-input {
+      display: flex;
+      gap: 10px;
+    }
+
+    #userInput {
+      flex: 1;
+      padding: 10px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: none;
+      background-color: #333;
+      color: #f0f0f0;
+    }
+
+    #micBtn {
+      background-color: #28a745;
+    }
+
+    #micBtn:hover {
+      background-color: #1e7e34;
+    }
+
+    .history-entry {
+      font-size: 13px;
+      padding: 6px;
+      border-bottom: 1px solid #444;
+      cursor: pointer;
+    }
+
+    .history-entry:hover {
+      background-color: #333;
+    }
+
+    .section-title {
+      color: #aaa;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .api-input {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+      font-size: 13px;
+      border-radius: 4px;
+      border: 1px solid #333;
+      background-color: #222;
+      color: #eee;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="section-title">聊天历史</div>
+    <div id="history"></div>
+    <div class="section-title">API 设置</div>
+    <div class="tip">Azure Endpoint</div>
+    <input id="apiBase" class="api-input" placeholder="https://xxx.openai.azure.com" />
+    <div class="tip">部署名称</div>
+    <input id="deploymentName" class="api-input" placeholder="gpt-4-vision" />
+    <div class="tip">API Key</div>
+    <input id="apiKey" class="api-input" placeholder="sk-..." type="password" />
+    <button onclick="saveApiSettings()">保存设置</button>
+  </div>
+  <div class="main">
+    <h1>灵瞳助手 LingTong AI</h1>
+    <button id="analyzeBtn">截图并分析</button>
+    <span class="tip">或使用 Cmd + Shift + H 快捷键</span>
+    <img id="preview" src="https://placekitten.com/400/200" alt="截图预览" />
+    <div id="result" class="result-box">等待分析结果...</div>
+    <div class="chat-input">
+      <input type="text" id="userInput" placeholder="请输入您想问AI的内容..." />
+      <button onclick="sendMessage()">发送</button>
+      <button id="micBtn">🎤</button>
+    </div>
+  </div>
+  <script>
+    const fs = require('fs');
+    const path = require('path');
+    const configPath = path.join(__dirname, 'local_storage', 'config.json');
+
+    function saveApiSettings() {
+      const config = {
+        apiBase: document.getElementById('apiBase').value,
+        deploymentName: document.getElementById('deploymentName').value,
+        apiKey: document.getElementById('apiKey').value
+      };
+      fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
+      alert('设置已保存！');
+    }
+
+    function loadApiSettings() {
+      try {
+        const content = fs.readFileSync(configPath, 'utf-8');
+        const cfg = JSON.parse(content);
+        document.getElementById('apiBase').value = cfg.apiBase || '';
+        document.getElementById('deploymentName').value = cfg.deploymentName || '';
+        document.getElementById('apiKey').value = cfg.apiKey || '';
+      } catch (e) {
+        console.log("无设置文件，跳过加载。");
+      }
+    }
+
+    loadApiSettings();
+  </script>
+  <script src="renderer.js"></script>
+</body>
+</html>
